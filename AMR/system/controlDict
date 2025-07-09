@@ -1,0 +1,114 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2.4.0                                 |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      controlDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+application     pimpleFoam;
+
+startFrom       latestTime;
+
+startTime       0;
+
+stopAt          endTime;
+
+endTime         2; //1000
+
+deltaT          1e-3;
+
+writeControl    timeStep;
+
+writeInterval   100; //50
+
+purgeWrite      0;
+
+writeFormat     binary;
+
+writePrecision  6;
+
+writeCompression off;
+
+timeFormat      general;
+
+timePrecision   2;
+
+runTimeModifiable true;
+
+writeMesh   yes;
+			
+
+functions
+{
+  
+    fieldAverage1
+    {
+        type            fieldAverage;
+        libs            ("libfieldFunctionObjects.so");
+        writeControl    writeTime;
+ 
+        fields
+        (
+            U
+            {
+                mean        on;
+                prime2Mean  on;
+                base        time;
+            }
+        );
+    }
+    
+    calcVorticity
+    {
+        libs        ("libutilityFunctionObjects.so");
+        type        coded;
+        name        computeVelocityGradientMag;
+        executeControl      timeStep;
+        executeInterval     1;
+        writeControl        writeTime;
+        writeInterval       1;
+
+        codeExecute
+        #{
+            const volVectorField& U  =  mesh().lookupObject<volVectorField>("U");
+
+            static autoPtr<volScalarField> vorticityMagPtr;
+            if(!vorticityMagPtr.valid()) {
+              Info << "Creating vorticityMag" << nl;
+
+              vorticityMagPtr.set
+              (
+                  new volScalarField
+                  (
+                    IOobject
+                    (
+                        "vorticityMag",
+                        time_.timeName(),
+                        U.mesh(),
+                        IOobject::NO_READ,
+                        IOobject::AUTO_WRITE
+                    ),
+                    mag(fvc::curl(U))
+                  )
+              );
+            }
+            volScalarField &vorticityMag = vorticityMagPtr();
+            vorticityMag.checkIn();
+            vorticityMag = mag(fvc::curl(U));
+            Info << " max vorticityMag " << max(vorticityMag) << nl;
+        #};
+    }
+
+}
+
+// ************************************************************************* //

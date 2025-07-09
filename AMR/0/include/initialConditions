@@ -1,0 +1,47 @@
+internalField   uniform 10;
+
+boundaryField
+{
+    inlet
+    {
+        type            fixedValue;
+        value           uniform 10;
+    }
+
+    outlet
+    {
+        type            zeroGradient;
+    }
+
+    wall1
+    {
+        type            omegaWallFunction;
+        value           uniform 10;
+    }
+wall2  
+    {
+        type            omegaWallFunction;
+        value           uniform 10;
+    }
+wall3  
+    {
+        type            omegaWallFunction;
+        value           uniform 10;
+    }
+wall4  
+    {
+        type            omegaWallFunction;
+        value           uniform 10;
+    }
+wall5  
+    {
+        type            omegaWallFunction;
+        value           uniform 10;
+    }
+  wall-part-volvo_test
+    {
+        type            omegaWallFunction;
+        value           uniform 10;
+    }
+    
+

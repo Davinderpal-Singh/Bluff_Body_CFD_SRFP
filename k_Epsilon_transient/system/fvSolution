@@ -1,0 +1,105 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2.4.0                                 |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      fvSolution;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+solvers
+{
+   p
+    {
+        solver          GAMG;
+        tolerance       1e-06;
+        relTol          1e-06; //.01
+        smoother        GaussSeidel;
+        preconditioner  DIC;
+        nPreSweeps      0;
+        nPostSweeps     2;
+        cacheAgglomeration on;
+        agglomerator    faceAreaPair;
+        nCellsInCoarsestLevel 10;
+        mergeLevels     1;
+    }
+    pFinal
+    {
+        solver          GAMG;
+        tolerance       1e-06;
+        relTol          1e-06; //.01
+        smoother        GaussSeidel;
+        nPreSweeps      0;
+        nPostSweeps     2;
+        cacheAgglomeration on;
+        agglomerator    faceAreaPair;
+        nCellsInCoarsestLevel 10;
+        mergeLevels     1;
+    }
+
+    "(U|k)"
+    {
+        solver          smoothSolver;
+        smoother        GaussSeidel;
+        tolerance       1e-06;//1e-05
+        relTol          1e-06;//0.1
+    }
+    "(UFinal|kFinal|epsilonFinal)"
+    {
+        solver          smoothSolver;
+        smoother        GaussSeidel;
+        tolerance       1e-06;//1e-05
+        relTol          1e-06;//0.1
+    }
+    epsilon
+    {
+        solver          smoothSolver;
+    smoother        GaussSeidel;    // â† Changed from DIC
+    preconditioner  DIC;
+
+    tolerance       1e-05;
+    relTol          0.1;
+    }
+
+}
+
+PIMPLE
+{
+    nNonOrthogonalCorrectors 0;
+    nCorrectors 	    2;
+
+    residualControl
+    {
+        p               1e-2;
+        U               1e-3;
+        "(k|epsilon)" 1e-3;
+    }
+}
+
+ 
+
+relaxationFactors
+{
+    fields
+    {
+        p               0.2;
+    }
+    equations
+    {
+        U               0.3;
+        k               0.3;
+        epsilon         0.3;
+        
+    }
+}
+
+
+// ************************************************************************* //
