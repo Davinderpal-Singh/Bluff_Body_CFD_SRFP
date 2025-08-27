@@ -1,0 +1,36 @@
+#!/bin/bash
+#SBATCH --job-name=open
+#SBATCH --partition=large
+#SBATCH --nodes=1
+#SBATCH --ntasks=2
+#SBATCH --time=1-00:00:00
+#SBATCH --output=log.%j.out
+#SBATCH --error=log.%j.err
+
+
+# Load OpenFOAM environment
+module purge
+#module load gcc/12.3.0-gcc-12.3.0-b3lfzmk
+module load gcc/10.2.0-gcc-12.3.0-4miv5iz
+#module load openfoam/v9
+#module load openmpi4/4.1.6
+#module load openmpi/4.1.6-gcc-12.3.0-7ymeek3
+
+#module load glibc/2.28-gcc-12.3.0-cfr5e6b 
+#module load gnu12/12.3.0
+export PATH=$HOME/openmpi-4.1.6-gcc10/bin:$PATH
+export LD_LIBRARY_PATH=$HOME/openmpi-4.1.6-gcc10/lib:$LD_LIBRARY_PATH 
+
+export WM_PROJECT_INST_DIR=$HOME
+source $HOME/OpenFOAM-9/etc/bashrc
+#source /iitgn/apps/spack/opt/spack/linux-rocky8-skylake_avx512/gcc-12.3.0/openfoam-org-9-*/etc/bashrc
+# Move to case directory
+cd $SLURM_SUBMIT_DIR
+
+# Optional: Clean old results
+# foamCleanTutorials
+foamToVTK
+
+
+
+

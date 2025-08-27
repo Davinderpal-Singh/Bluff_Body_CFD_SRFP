@@ -1,0 +1,49 @@
+)
+;
+
+boundaryField
+{
+    inlet
+    {
+        type            fixedValue;
+        value           uniform (0 16.6 0);
+    }
+    outlet
+    {
+        type            zeroGradient;
+    }
+    wall1
+    {
+        type            fixedValue;
+        value           uniform (0 0 0);
+    }
+    wall2
+    {
+        type            fixedValue;
+        value           uniform (0 0 0);
+    }
+    wall3
+    {
+        type            noSlip;
+    }
+    wall4
+    {
+        type            noSlip;
+    }
+    wall5
+    {
+        type            noSlip;
+    }
+    frontwall
+    {
+        type            symmetry;
+    }
+    backwall
+    {
+        type            symmetry;
+    }
+}
+
+
+// ************************************************************************* //
+

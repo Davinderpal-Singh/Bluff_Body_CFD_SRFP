@@ -1,0 +1,163 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2.4.0                                 |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      controlDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+application     pimpleFoam;
+
+startFrom       latestTime;
+
+startTime       20;
+
+stopAt          endTime;
+
+endTime         26.5; //1000
+
+deltaT          0.001;
+
+writeControl    timeStep;
+
+writeInterval   25; //50
+
+purgeWrite      0;
+
+writeFormat     ascii;
+
+writePrecision  3;
+
+writeCompression off;
+
+timeFormat      general;
+
+timePrecision  8;
+
+runTimeModifiable true;
+			
+
+functions
+{
+ 
+surfaces1  // <-- Outer name is arbitrary but unique
+{
+    type            surfaces;
+    functionOnjectLibs            ("libsampling.so");
+    writeControl    timeStep;
+    writeInterval   25;
+
+    surfaceFormat   vtk;
+ 
+ formatOptions
+ {
+  vtk
+  {
+   legacy true;
+   format ascii;
+  } 
+ }
+ 
+    fields          (p U Mode1 Mode2 Mode3 Mode4 Mode5 Mode6 Mode7 Mode8 Mode9 Mode10 vorticityMag);
+
+    interpolationScheme cellPoint;
+
+    surfaces
+        (
+            xNormal
+            {
+                type        cuttingPlane;
+                planeType   pointAndNormal;
+                pointAndNormalDict
+                {
+                    point   (0.04 0.01155 0);
+                    normal  (1 0 0);
+                }
+                interpolate true;
+            }
+             );   
+    }
+    
+    
+    ////////
+    
+    fieldAverage1
+    {
+        type            fieldAverage;
+        libs            ("libfieldFunctionObjects.so");
+        enabled         true;
+        writeControl    timeStep;
+        writeInterval   25;
+
+
+        fields
+        (
+            U
+            {
+                mean        on;
+                prime2Mean  on;
+                base        time;
+            }
+        );
+    }
+    
+    
+    ////////////
+
+ 
+ //////////
+ calcVorticity
+    {
+        libs        ("libutilityFunctionObjects.so");
+        type        coded;
+        name        computeVelocityGradientMag;
+        executeControl      timeStep;
+        executeInterval     1;
+        writeControl        writeTime;
+        writeInterval       1;
+
+        codeExecute
+        #{
+            const volVectorField& U  =  mesh().lookupObject<volVectorField>("U");
+
+            static autoPtr<volScalarField> vorticityMagPtr;
+            if(!vorticityMagPtr.valid()) {
+              Info << "Creating vorticityMag" << nl;
+
+              vorticityMagPtr.set
+              (
+                  new volScalarField
+                  (
+                    IOobject
+                    (
+                        "vorticityMag",
+                        time_.timeName(),
+                        U.mesh(),
+                        IOobject::NO_READ,
+                        IOobject::AUTO_WRITE
+                    ),
+                    mag(fvc::curl(U))
+                  )
+              );
+            }
+            volScalarField &vorticityMag = vorticityMagPtr();
+            vorticityMag.checkIn();
+            vorticityMag = mag(fvc::curl(U));
+            Info << " max vorticityMag " << max(vorticityMag) << nl;
+        #};
+    }
+    
+}
+ 
+  
+
+// ************************************************************************* //
